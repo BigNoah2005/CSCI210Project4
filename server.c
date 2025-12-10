@@ -27,6 +27,9 @@ int main() {
 	struct message req;
 	signal(SIGPIPE,SIG_IGN);
 	signal(SIGINT,terminate);
+
+	mkfifo("serverFIFO", 0666);
+	
 	server = open("serverFIFO",O_RDONLY);
 	dummyfd = open("serverFIFO",O_WRONLY);
 
