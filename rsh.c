@@ -6,6 +6,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define N 13
 
@@ -30,14 +32,20 @@ void sendmsg (char *user, char *target, char *msg) {
 	// TODO:
 	// Send a request to the server to send the message (msg) to the target user (target)
 	// by creating the message structure and writing it to server's FIFO
+	struct message request;
 
+	strncpy(request.source, user, sizeof(request.source) - 1);
+	request.source[sizeof(request.source) - 1] = '\0';
 
+	strncpy(request.target, target, sizeof(request.target) - 1);
+	request.target[sizeof(request.target) - 1] = '\0';
+	
+	strncpy(request.msg, msg, sizeof(request.msg) - 1);
+	request.msg[sizeof(request.msg) - 1] = '\0';
 
-
-
-
-
-
+	int fd = open("serverFIFO", O_WRONLY);
+	ssize_t written = write(fd, &request, sizeof(request));
+	close(fd);
 }
 
 void* messageListener(void *arg) {
@@ -49,12 +57,27 @@ void* messageListener(void *arg) {
 	// Incoming message from [source]: [message]
 	// put an end of line at the end of the message
 
+	char pipe[80];
+	snprintf(pipe, sizeof(pipe), "%sFIFO", uName);
 
+	mkfifo(pipe, 0666);
+	int fd = open(pipe, O_RDONLY);
 
+	int dummyfd = open(pipe, O_WRONLY);
 
+	struct message incomingmsg;
 
+	while(1) {
+		ssize_t n = read(fd, &incomingmsg, sizeof(incomingmsg));
+		if (n == sizeof(incomingmsg)) {
+			printf("Incoming message from %s: %s\n", incomingmsg.source, incomingmsg.msg);
+			fflush(stdout);
+		} else {
+			continue;
+		}
+	}
+	pthread_exit((void *)0);
 
-	pthread_exit((void*)0);
 }
 
 int isAllowed(const char*cmd) {
@@ -86,9 +109,14 @@ int main(int argc, char **argv) {
     // TODO:
     // create the message listener thread
 
+	strcpy(uName, argv[1]);
 
-
-
+	pthread_t tid;
+	int rc = pthread_create(&tid, NULL, messageListener, NULL);
+	if (rc != 0) {
+		perror("pthread_create");
+		exit(1);
+	}
 
     while (1) {
 
@@ -124,14 +152,15 @@ int main(int argc, char **argv) {
 		// if no message is specified, you should print the followingA
  		// printf("sendmsg: you have to enter a message\n");
 
+		char* token = strtok(line2, " ");
+		token = strtok(NULL, " ");
 
+		char target[50];
+		strncpy(target, token, sizeof(target) - 1);
+		target[sizeof(target) - 1] = '\0';
 
-
-
-
-
-
-
+		char* msgstart = token + strlen(token) + 1;
+		sendmsg(uName, target, msgstart);
 
 		continue;
 	}

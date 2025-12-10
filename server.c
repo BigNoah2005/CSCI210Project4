@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 struct message {
 	char source[50];
@@ -32,24 +34,26 @@ int main() {
 		// TODO:
 		// read requests from serverFIFO
 
+		ssize_t n = read(server, &req, sizeof(req));
+		if (n <= 0) {
+			continue;
+		}
 
-
-
-
-
-		printf("Received a request from %s to send the message %s to %s.\n",req.source,req.msg,req.target);
+		printf("Received a request from %s to send the message %s to %s.\n", req.source, req.msg, req.target);
 
 		// TODO:
 		// open target FIFO and write the whole message struct to the target FIFO
 		// close target FIFO after writing the message
 
+		char pipe[80];
+		snprintf(pipe, sizeof(pipe), "%sFIFO", req.target);
+		target = open(pipe, O_WRONLY);
+		write(target, &req, sizeof(req));
 
-
-
-
-
+		close(target);
 
 	}
+
 	close(server);
 	close(dummyfd);
 	return 0;
