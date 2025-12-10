@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	fprintf(stderr,"rsh>");
 
 	if (fgets(line,256,stdin)==NULL) {
-		printf("Exiting...");
+		printf("Exiting...\n");
 		fflush(stdout);
 		break;
 	}
@@ -179,7 +179,11 @@ int main(int argc, char **argv) {
 		continue;
 	}
 
-	if (strcmp(cmd,"exit")==0) break;
+	if (strcmp(cmd,"exit")==0) {
+		printf("Exiting...\n");
+		fflush(stdout);
+		break;
+	};
 
 	if (strcmp(cmd,"cd")==0) {
 		char *targetDir=strtok(NULL," ");
