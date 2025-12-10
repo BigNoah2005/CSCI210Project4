@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 		token = strtok(NULL, " ");
 
 		if (token == NULL) {
-			printf(" ");
+			printf("sendmsg: you have to specify target user\n");
 			continue;
 		}
 
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 		char* msgstart = token + strlen(token) + 1;
 
 		if (*msgstart == '\0') {
-			printf(" ");
+			printf("sendmsg: you have to enter a message\n");
 			continue;
 		}
 
