@@ -57,25 +57,29 @@ void* messageListener(void *arg) {
 	// Incoming message from [source]: [message]
 	// put an end of line at the end of the message
 
-	char pipe[80];
-	snprintf(pipe, sizeof(pipe), "%sFIFO", uName);
-
-	mkfifo(pipe, 0666);
-	int fd = open(pipe, O_RDONLY);
-
-	int dummyfd = open(pipe, O_WRONLY);
-
+	int fd;
+	int dummyfd;
 	struct message incomingmsg;
+
+	fd = open(uName, O_RDONLY);
+	if (fd < 0) {
+		pthread_exit((void*)0);
+	}
+
+	dummyfd = open(uName, O_WRONLY);
+	if (dummyfd < 0) {
+		pthread_exit((void*)0);
+	}
 
 	while(1) {
 		ssize_t n = read(fd, &incomingmsg, sizeof(incomingmsg));
 		if (n == sizeof(incomingmsg)) {
 			printf("Incoming message from %s: %s\n", incomingmsg.source, incomingmsg.msg);
 			fflush(stdout);
-		} else {
-			continue;
 		}
 	}
+	close(fd);
+	close(dummyfd);
 	pthread_exit((void *)0);
 
 }
@@ -151,31 +155,43 @@ int main(int argc, char **argv) {
 		// printf("sendmsg: you have to specify target user\n");
 		// if no message is specified, you should print the followingA
  		// printf("sendmsg: you have to enter a message\n");
-
-		char* token = strtok(line2, " ");
-		token = strtok(NULL, " ");
-
-		if (token == NULL) {
+		char *msgstart = line2;
+		while (*msgstart == ' ') {
+			msgstart++;
+		}
+		while (*msgstart != ' ' && *msgstart != '\0') {
+			msgstart++;
+		}
+		while (*msgstart != '\0') {
 			printf("sendmsg: you have to specify target user\n");
 			continue;
 		}
 
 		char target[50];
-		strncpy(target, token, sizeof(target) - 1);
-		target[sizeof(target) - 1] = '\0';
+		char *targetstart = msgstart;
 
-		char* msgstart = token + strlen(token);
-		if (*msgstart == ' ') {
+		while (*msgstart != ' ' && *msgstart != '\0') {
 			msgstart++;
 		}
+		size_t targetlen = msgstart - targetstart;
+		if (targetlen >= sizeof(target)) {
+			targetlen = sizeof(target) -1;
+		}
+		memcpy(target, targetstart, targetlen);
+		target[targetlen] = '\0';
 
+		while (*msgstart == ' ') {
+			msgstart++;
+		}
 		if (*msgstart == '\0') {
 			printf("sendmsg: you have to enter a message\n");
 			continue;
 		}
 
-		sendmsg(uName, target, msgstart);
+		char *msg = msgstart;
+		sendmsg(uName, target, msg);
 		continue;
+
 	}
 
 	if (strcmp(cmd,"exit")==0) break;

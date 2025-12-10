@@ -27,9 +27,6 @@ int main() {
 	struct message req;
 	signal(SIGPIPE,SIG_IGN);
 	signal(SIGINT,terminate);
-
-	mkfifo("serverFIFO", 0666);
-	
 	server = open("serverFIFO",O_RDONLY);
 	dummyfd = open("serverFIFO",O_WRONLY);
 
@@ -48,11 +45,12 @@ int main() {
 		// open target FIFO and write the whole message struct to the target FIFO
 		// close target FIFO after writing the message
 
-		char pipe[80];
-		snprintf(pipe, sizeof(pipe), "%sFIFO", req.target);
-		target = open(pipe, O_WRONLY);
-		write(target, &req, sizeof(req));
+		target = open(req.target, O_WRONLY);
+		if (target < 0) {
+			continue;
+		}
 
+		write(target, &req, sizeof(req));
 		close(target);
 
 	}
