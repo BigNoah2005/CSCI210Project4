@@ -44,7 +44,10 @@ void sendmsg (char *user, char *target, char *msg) {
 	request.msg[sizeof(request.msg) - 1] = '\0';
 
 	int fd = open("serverFIFO", O_WRONLY);
-	ssize_t written = write(fd, &request, sizeof(request));
+	if (fd < 0) {
+		return;
+	}
+	write(fd, &request, sizeof(request));
 	close(fd);
 }
 
@@ -107,8 +110,6 @@ int main(int argc, char **argv) {
 	exit(1);
     }
     signal(SIGINT,terminate);
-
-    strcpy(uName,argv[1]);
 
     // TODO:
     // create the message listener thread
