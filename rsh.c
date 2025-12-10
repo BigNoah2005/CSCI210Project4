@@ -122,11 +122,7 @@ int main(int argc, char **argv) {
 
 	fprintf(stderr,"rsh>");
 
-	if (fgets(line,256,stdin)==NULL) {
-		printf("Exiting...\n");
-		fflush(stdout);
-		break;
-	}
+	if (fgets(line,256,stdin)==NULL) continue;
 
 	if (strcmp(line,"\n")==0) continue;
 
@@ -168,7 +164,10 @@ int main(int argc, char **argv) {
 		strncpy(target, token, sizeof(target) - 1);
 		target[sizeof(target) - 1] = '\0';
 
-		char* msgstart = token + strlen(token) + 1;
+		char* msgstart = token + strlen(token);
+		if (*msgstart == ' ') {
+			msgstart++;
+		}
 
 		if (*msgstart == '\0') {
 			printf("sendmsg: you have to enter a message\n");
@@ -179,11 +178,7 @@ int main(int argc, char **argv) {
 		continue;
 	}
 
-	if (strcmp(cmd,"exit")==0) {
-		printf("Exiting...\n");
-		fflush(stdout);
-		break;
-	};
+	if (strcmp(cmd,"exit")==0) break;
 
 	if (strcmp(cmd,"cd")==0) {
 		char *targetDir=strtok(NULL," ");
