@@ -122,7 +122,11 @@ int main(int argc, char **argv) {
 
 	fprintf(stderr,"rsh>");
 
-	if (fgets(line,256,stdin)==NULL) continue;
+	if (fgets(line,256,stdin)==NULL) {
+		printf("Exiting...");
+		fflush(stdout);
+		break;
+	}
 
 	if (strcmp(line,"\n")==0) continue;
 
