@@ -163,7 +163,10 @@ int main(int argc, char **argv) {
 		while (*msgstart != ' ' && *msgstart != '\0') {
 			msgstart++;
 		}
-		while (*msgstart != '\0') {
+		while (*msgstart == ' ') {
+			msgstart++;
+		}
+		if (*msgstart == '\0') {
 			printf("sendmsg: you have to specify target user\n");
 			continue;
 		}
