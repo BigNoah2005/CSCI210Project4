@@ -155,13 +155,23 @@ int main(int argc, char **argv) {
 		char* token = strtok(line2, " ");
 		token = strtok(NULL, " ");
 
+		if (token == NULL) {
+			printf(" ");
+			continue;
+		}
+
 		char target[50];
 		strncpy(target, token, sizeof(target) - 1);
 		target[sizeof(target) - 1] = '\0';
 
 		char* msgstart = token + strlen(token) + 1;
-		sendmsg(uName, target, msgstart);
 
+		if (*msgstart == '\0') {
+			printf(" ");
+			continue;
+		}
+
+		sendmsg(uName, target, msgstart);
 		continue;
 	}
 
